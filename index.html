@@ -1,0 +1,408 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8">
+  <title>Würfelaktion mit Effekten</title>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels"></script>
+  <style>
+    body {
+      -webkit-user-select: none;
+      -moz-user-select: none;
+      -ms-user-select: none;
+      user-select: none;
+      font-family: Arial, sans-serif;
+      text-align: center;
+      margin-top: 50px;
+    }
+    #editButton, #globalEditButton, #toggleStatsButton, #settingsButton {
+      position: absolute;
+      left: 20px;
+      padding: 8px 16px;
+      font-size: 14px;
+    }
+    #editButton { top: 20px; }
+    #toggleStatsButton { top: 60px; }
+    #globalEditButton { top: 100px; }
+    #settingsButton { top: 140px; }
+
+    .dice-container {
+      font-size: 80px;
+      margin: 20px;
+    }
+    .dice {
+      display: inline-block;
+      margin: 0 20px;
+      cursor: pointer;
+    }
+    .dice:hover {
+      transform: scale(1.2);
+      transition: transform 0.2s ease;
+    }
+    canvas {
+      max-width: 100%;
+    }
+    #effectBox {
+      position: fixed;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      z-index: 9999;
+      background: #fffdf7;
+      border: 3px solid #e67e22;
+      border-radius: 12px;
+      padding: 30px;
+      width: 90vw;
+      max-width: 400px;
+      height: 300px;
+      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+      text-align: center;
+      display: none;
+    }
+    #effectText {
+      font-size: 20px;
+      color: #e67e22;
+      margin-bottom: 20px;
+    }
+    #editArea, #globalEditArea {
+      display: none;
+      text-align: left;
+      margin: 20px auto;
+      max-width: 400px;
+      border: 1px solid #ccc;
+      background-color: #f9f9f9;
+      padding: 20px;
+      border-radius: 10px;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+    }
+    #globalEditArea { background-color: #eef; }
+    #resetStatsBtn {
+      margin-top: 10px;
+      font-size: 14px;
+      padding: 5px 10px;
+    }
+    textarea {
+      width: 100%;
+      height: 100px;
+    }
+    #settingsMenu {
+      display: none;
+      position: fixed;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      background: #f8f8f8;
+      border: 2px solid #ccc;
+      padding: 20px;
+      border-radius: 10px;
+      z-index: 9999;
+      width: 300px;
+    }
+  </style>
+</head>
+<body>
+  <button id="editButton" onclick="toggleEdit()">Effekte bearbeiten</button>
+  <button id="globalEditButton" onclick="toggleGlobalEdit()">Globale Effekte bearbeiten</button>
+  <button id="toggleStatsButton" onclick="toggleStats()">Statistiken ein-/ausblenden</button>
+  <button id="settingsButton" onclick="toggleSettings()">⚙️ Einstellungen</button>
+
+  <div id="settingsMenu">
+    <h3>Einstellungen</h3>
+    <label><input type="checkbox" id="toggleNormalDice" checked> Normale Würfel</label><br>
+    <label><input type="checkbox" id="toggleBarbarianDice" checked> Barbarenwürfel</label><br>
+    <label><input type="checkbox" id="toggleGuildDice" checked> Handelsgildenwürfel</label><br>
+    <label><input type="checkbox" id="toggleSevenEffects" checked> Effekte bei 7</label><br>
+    <label><input type="checkbox" id="toggleGlobalEffects" checked> Globale Effekte</label><br><br>
+    <button onclick="saveSettings()">Speichern</button>
+    <button onclick="toggleSettings()">Schließen</button>
+  </div>
+
+  <h1>Würfelaktion</h1>
+  <div class="dice-container">
+    <div class="dice" id="dice1" onclick="rollDice()">🎲</div>
+    <div class="dice" id="dice2" onclick="rollDice()">🎲</div>
+    <div class="dice" id="dice3" onclick="rollDice()">🟡</div>
+    <div class="dice" id="dice4" onclick="rollDice()">🔵</div>
+  </div>
+  <p id="result"></p>
+  <p id="thirdResult"></p>
+  <p id="fourthResult"></p>
+  <div id="effectBox">
+    <div id="effectTitle" style="font-size: 22px; font-weight: bold; color: #d35400; margin-bottom: 20px;"></div>
+    <div id="effectText" style="font-size: 16px;"></div>
+    <button onclick="closeEffect()" style="position: absolute; bottom: 20px; right: 20px; font-size: 20px; background-color: #2ecc71; color: white; border: none; border-radius: 5px; padding: 8px 12px; cursor: pointer;">✔</button>
+  </div>
+
+  <div id="globalEditArea">
+    <h3>Globale Effekte (einer pro Zeile):</h3>
+    <textarea id="globalEffectInput" placeholder="Jeder globale Effekt in eine neue Zeile schreiben..."></textarea><br>
+    <button onclick="saveGlobalEffects()" style="margin-top: 10px;">Speichern</button>
+  </div>
+
+  <div id="editArea">
+    <h3>Effekte für Summe 7 (einer pro Zeile):</h3>
+    <textarea id="effectInput" placeholder="Jeder Effekt in eine neue Zeile schreiben..."></textarea><br>
+    <button onclick="saveEffects()" style="margin-top: 10px;">Speichern</button>
+  </div>
+
+  <div id="globalEffectBox" style="display:none; margin: 20px auto; max-width: 600px; font-size: 18px; padding: 10px; border: 2px solid #555; background: #eef7ff; font-weight: bold; border-radius: 10px;"></div>
+
+  <div id="statsContainer" style="display: flex; justify-content: center; gap: 40px; flex-wrap: wrap;">
+    <div style="width: 400px; height: 300px;">
+      <canvas id="statsChart"></canvas>
+    </div>
+    <div style="width: 400px; height: 300px;">
+      <canvas id="thirdDiceChart"></canvas>
+    </div>
+    <div style="width: 400px; height: 300px;">
+      <canvas id="fourthDiceChart"></canvas>
+    </div>
+  </div>
+
+  <button id="resetStatsBtn" onclick="resetStats()">Statistik zurücksetzen</button>
+
+  <script>
+    let settings = JSON.parse(localStorage.getItem("diceSettings")) || {
+      normalDice: true,
+      barbarianDice: true,
+      guildDice: true,
+      effectsOnSeven: true,
+      globalEffects: true
+    };
+
+    function toggleSettings() {
+      const menu = document.getElementById("settingsMenu");
+      document.getElementById("toggleNormalDice").checked = settings.normalDice;
+      document.getElementById("toggleBarbarianDice").checked = settings.barbarianDice;
+      document.getElementById("toggleGuildDice").checked = settings.guildDice;
+      document.getElementById("toggleSevenEffects").checked = settings.effectsOnSeven;
+      document.getElementById("toggleGlobalEffects").checked = settings.globalEffects;
+      menu.style.display = menu.style.display === "none" ? "block" : "none";
+    }
+
+    function saveSettings() {
+      settings.normalDice = document.getElementById("toggleNormalDice").checked;
+      settings.barbarianDice = document.getElementById("toggleBarbarianDice").checked;
+      settings.guildDice = document.getElementById("toggleGuildDice").checked;
+      settings.effectsOnSeven = document.getElementById("toggleSevenEffects").checked;
+      settings.globalEffects = document.getElementById("toggleGlobalEffects").checked;
+      localStorage.setItem("diceSettings", JSON.stringify(settings));
+      document.getElementById("settingsMenu").style.display = "none";
+    }
+    const diceFaces = ['⚀','⚁','⚂','⚃','⚄','⚅'];
+    const thirdDiceFaces = ['Vorrücken','Stehenbleiben'];
+    const fourthDiceColors = ['🔵','🟡','🟢','🟣','🔴','⚫'];
+    const fourthDiceNames = ['blau','gelb','grün','pink','rot','schwarz'];
+
+    let effects = JSON.parse(localStorage.getItem("sevenEffects")) || ["Knappheit: Jeder verliert eine Karte"];
+    let globalEffects = JSON.parse(localStorage.getItem("globalEffects")) || ["Globale Regel aktiv"];
+
+    let stats = JSON.parse(localStorage.getItem("diceStats")) || Array(11).fill(0);
+    let thirdDiceStats = JSON.parse(localStorage.getItem("thirdDiceStats")) || [0, 0];
+    let fourthDiceStats = JSON.parse(localStorage.getItem("fourthDiceStats")) || Array(6).fill(0);
+
+    let totalRolls = 0;
+    let lastGlobalEffect = "";
+    let rollingDisabled = false;
+
+    const statsChart = new Chart(document.getElementById('statsChart'), {
+      type: 'bar',
+      data: {
+        labels: Array.from({length: 11}, (_, i) => (i + 2).toString()),
+        datasets: [{
+          label: 'Häufigkeit der gewürfelten Summe',
+          data: stats,
+          backgroundColor: 'rgba(54, 162, 235, 0.7)',
+          borderColor: 'rgba(54, 162, 235, 1)',
+          borderWidth: 1
+        }]
+      },
+      options: {
+        scales: {
+          y: {
+            beginAtZero: true,
+            ticks: { stepSize: 1 }
+          }
+        }
+      }
+    });
+
+    const thirdDiceChart = new Chart(document.getElementById('thirdDiceChart'), {
+      type: 'pie',
+      data: {
+        labels: thirdDiceFaces,
+        datasets: [{
+          label: 'Barbarenwürfel',
+          data: thirdDiceStats,
+          backgroundColor: ['#2ecc71', '#e74c3c']
+        }]
+      },
+      options: {
+        plugins: {
+          datalabels: {
+            formatter: (value, ctx) => {
+              const sum = ctx.chart.data.datasets[0].data.reduce((a, b) => a + b, 0);
+              return sum ? (value / sum * 100).toFixed(1) + '%' : '0%';
+            },
+            color: '#fff',
+            font: { weight: 'bold', size: 14 }
+          }
+        }
+      }
+    });
+
+    const fourthDiceChart = new Chart(document.getElementById('fourthDiceChart'), {
+      type: 'pie',
+      data: {
+        labels: fourthDiceNames,
+        datasets: [{
+          label: 'Handelsgildenfarbe',
+          data: fourthDiceStats,
+          backgroundColor: ['#3498db', '#f1c40f', '#2ecc71', '#e84393', '#e74c3c', '#34495e']
+        }]
+      },
+      options: {
+        plugins: {
+          datalabels: {
+            formatter: (value, ctx) => {
+              const sum = ctx.chart.data.datasets[0].data.reduce((a, b) => a + b, 0);
+              return sum ? (value / sum * 100).toFixed(1) + '%' : '0%';
+            },
+            color: '#fff',
+            font: { weight: 'bold', size: 14 }
+          }
+        }
+      }
+    });
+
+    function rollDice() {
+      totalRolls++;
+
+      if (settings.globalEffects) {
+        if (totalRolls >= 7 && (totalRolls - 7) % 8 === 0) {
+          lastGlobalEffect = globalEffects[Math.floor(Math.random() * globalEffects.length)];
+          document.getElementById("globalEffectBox").textContent = lastGlobalEffect;
+          document.getElementById("globalEffectBox").style.display = "block";
+        } else if (lastGlobalEffect) {
+          document.getElementById("globalEffectBox").textContent = lastGlobalEffect;
+          document.getElementById("globalEffectBox").style.display = "block";
+        }
+      } else {
+        document.getElementById("globalEffectBox").style.display = "none";
+      }
+
+      if (rollingDisabled) return;
+      rollingDisabled = true;
+
+      const number1 = Math.floor(Math.random() * 6) + 1;
+      const number2 = Math.floor(Math.random() * 6) + 1;
+      const third = Math.floor(Math.random() * 6);
+      const fourth = Math.floor(Math.random() * 6);
+
+      const thirdOutcome = third < 3 ? 'Vorrücken' : 'Stehenbleiben';
+      const fourthColor = fourthDiceColors[fourth];
+      const fourthText = fourthDiceNames[fourth];
+      const sum = number1 + number2;
+
+      document.getElementById('dice1').textContent = settings.normalDice ? diceFaces[number1 - 1] : '❌';
+      document.getElementById('dice2').textContent = settings.normalDice ? diceFaces[number2 - 1] : '❌';
+      document.getElementById('dice3').textContent = settings.barbarianDice ? (thirdOutcome === 'Vorrücken' ? '➡️' : '⛔️') : '❌';
+      document.getElementById('dice4').textContent = settings.guildDice ? fourthColor : '❌';
+
+      document.getElementById('result').textContent = settings.normalDice ? `Gesamtergebnis: ${sum}` : '';
+      document.getElementById('thirdResult').textContent = settings.barbarianDice ? `Barbarenwürfel: ${thirdOutcome}` : '';
+      document.getElementById('fourthResult').textContent = settings.guildDice ? `Handelsgilde: ${fourthText}` : '';
+
+      if (settings.normalDice) stats[sum - 2]++;
+      if (settings.barbarianDice) (thirdOutcome === 'Vorrücken' ? thirdDiceStats[0]++ : thirdDiceStats[1]++);
+      if (settings.guildDice) fourthDiceStats[fourth]++;
+
+      localStorage.setItem("diceStats", JSON.stringify(stats));
+      localStorage.setItem("thirdDiceStats", JSON.stringify(thirdDiceStats));
+      localStorage.setItem("fourthDiceStats", JSON.stringify(fourthDiceStats));
+
+      statsChart.update();
+      thirdDiceChart.update();
+      fourthDiceChart.update();
+
+      if (sum === 7 && settings.effectsOnSeven) {
+        const randomEffect = effects[Math.floor(Math.random() * effects.length)];
+        const [title, ...textParts] = randomEffect.split(":");
+        document.getElementById('effectTitle').textContent = title?.trim() || "Ereignis";
+        document.getElementById('effectText').textContent = textParts.join(":").trim();
+        document.getElementById('effectBox').style.display = 'block';
+      } else {
+        rollingDisabled = false;
+      }
+    }
+
+    function closeEffect() {
+      document.getElementById('effectBox').style.display = 'none';
+      rollingDisabled = false;
+    }
+
+    function toggleEdit() {
+      const area = document.getElementById('editArea');
+      const input = document.getElementById('effectInput');
+      if (area.style.display === 'none') {
+        input.value = effects.join("\n");
+        area.style.display = 'block';
+      } else {
+        area.style.display = 'none';
+      }
+    }
+
+    function toggleGlobalEdit() {
+      const area = document.getElementById('globalEditArea');
+      const input = document.getElementById('globalEffectInput');
+      if (area.style.display === 'none') {
+        input.value = globalEffects.join("\n");
+        area.style.display = 'block';
+      } else {
+        area.style.display = 'none';
+      }
+    }
+
+    function saveEffects() {
+      const input = document.getElementById("effectInput").value;
+      effects = input.split("\n").map(e => e.trim()).filter(e => e);
+      localStorage.setItem("sevenEffects", JSON.stringify(effects));
+      document.getElementById("editArea").style.display = "none";
+    }
+
+    function saveGlobalEffects() {
+      const input = document.getElementById("globalEffectInput").value;
+      globalEffects = input.split("\n").map(e => e.trim()).filter(e => e);
+      localStorage.setItem("globalEffects", JSON.stringify(globalEffects));
+      document.getElementById("globalEditArea").style.display = "none";
+    }
+
+    function resetStats() {
+      stats = Array(11).fill(0);
+      thirdDiceStats = [0, 0];
+      fourthDiceStats = Array(6).fill(0);
+      localStorage.setItem("diceStats", JSON.stringify(stats));
+      localStorage.setItem("thirdDiceStats", JSON.stringify(thirdDiceStats));
+      localStorage.setItem("fourthDiceStats", JSON.stringify(fourthDiceStats));
+      statsChart.data.datasets[0].data = stats;
+      thirdDiceChart.data.datasets[0].data = thirdDiceStats;
+      fourthDiceChart.data.datasets[0].data = fourthDiceStats;
+      statsChart.update();
+      thirdDiceChart.update();
+      fourthDiceChart.update();
+    }
+
+    function toggleStats() {
+      const statsContainer = document.getElementById('statsContainer');
+      statsContainer.style.display = statsContainer.style.display === 'none' ? 'flex' : 'none';
+    }
+
+    document.addEventListener('contextmenu', e => e.preventDefault());
+    document.addEventListener('keydown', e => {
+      if (e.ctrlKey && ['u', 'c', 'x', 's'].includes(e.key.toLowerCase())) {
+        e.preventDefault();
+      }
+    });
+  </script>
+</body>
+</html>
