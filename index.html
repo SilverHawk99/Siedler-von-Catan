@@ -205,7 +205,20 @@
     const fourthDiceNames = ['blau','gelb','grün','pink','rot','schwarz'];
 
     let effects = JSON.parse(localStorage.getItem("sevenEffects")) || ["Knappheit: Jeder verliert eine Karte"];
-    let globalEffects = JSON.parse(localStorage.getItem("globalEffects")) || ["Globale Regel aktiv"];
+    let globalEffects = JSON.parse(localStorage.getItem("globalEffects")) || [
+        "Wenn du leer ausgehst nimm dir einen belibigen Rohstoff.",
+        "Lehmbrüche und Erzmienen produzieren keine Handelswahren mehr,nimm dir stattdessen zwei Rohstoffe.",
+        "Forste und Weiden produzieren keine Handelswahren mehr,nimm dir stattdessen zwei Rohstoffe.",
+        "Felder und Weiden produzieren keine Handelswahren mehr,nimm dir stattdessen zwei Rohstoffe.",
+        "Der Spieler mit den wenigsten Siegpunkten darf Städte und Siedlungen einen Rohstoff günstiger Bauen.",
+        "Statt einer Fortschrittskarte erhält man zwei, zählt nur für den aktiven Spieler.",
+        "Lehmbrüche liefern keine Waren mehr!",
+        "Erzmienen liefern keine Waren mehr!",
+        "Forste liefern keine Waren mehr!",
+        "Weiden liefern keine Waren mehr!",
+        "Getreidefelder liefern keine Waren mehr!",
+        "Küsten liefern keine Waren mehr!"
+    ];
 
     let stats = JSON.parse(localStorage.getItem("diceStats")) || Array(11).fill(0);
     let thirdDiceStats = JSON.parse(localStorage.getItem("thirdDiceStats")) || [0, 0];
