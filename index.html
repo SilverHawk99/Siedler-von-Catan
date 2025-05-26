@@ -308,27 +308,54 @@
     let lastGlobalEffect = "";
     let rollingDisabled = false;
 
-    const statsChart = new Chart(document.getElementById('statsChart'), {
-      type: 'bar',
-      data: {
-        labels: Array.from({length: 11}, (_, i) => (i + 2).toString()),
-        datasets: [{
-          label: 'Häufigkeit der gewürfelten Summe',
-          data: stats,
-          backgroundColor: 'rgba(54, 162, 235, 0.7)',
-          borderColor: 'rgba(54, 162, 235, 1)',
-          borderWidth: 1
-        }]
+const statsChart = new Chart(document.getElementById('statsChart'), {
+  type: 'bar',
+  data: {
+    labels: Array.from({length: 11}, (_, i) => (i + 2).toString()),
+    datasets: [{
+      label: 'Häufigkeit der gewürfelten Summe',
+      data: stats,
+      backgroundColor: 'rgba(54, 162, 235, 0.7)',
+      borderColor: 'rgba(54, 162, 235, 1)',
+      borderWidth: 1
+    }]
+  },
+  options: {
+    scales: {
+      y: {
+        beginAtZero: true,
+        ticks: {
+          stepSize: 1,
+          color: '#000',
+          font: {
+            size: 14,
+            weight: 'bold'
+          }
+        }
       },
-      options: {
-        scales: {
-          y: {
-            beginAtZero: true,
-            ticks: { stepSize: 1 }
+      x: {
+        ticks: {
+          color: '#000',
+          font: {
+            size: 14,
+            weight: 'bold'
           }
         }
       }
-    });
+    },
+    plugins: {
+      legend: {
+        labels: {
+          color: '#000',
+          font: {
+            weight: 'bold',
+            size: 14
+          }
+        }
+      }
+    }
+  }
+});
 
     const thirdDiceChart = new Chart(document.getElementById('thirdDiceChart'), {
       type: 'pie',
