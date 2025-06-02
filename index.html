@@ -125,13 +125,64 @@
       z-index: 0;
       pointer-events: none;
     }
+    #dropdownContainer {
+  position: fixed;
+  top: 20px;
+  right: 20px;
+  z-index: 10000;
+}
+
+#dropdownToggle {
+  background-color: #f0f0f0;
+  border: none;
+  font-size: 24px;
+  padding: 10px 14px;
+  cursor: pointer;
+  border-radius: 50%;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
+}
+
+#dropdownMenu {
+  display: none;
+  position: absolute;
+  top: 50px;
+  right: 0;
+  background-color: #fff;
+  border: 1px solid #ccc;
+  border-radius: 10px;
+  padding: 10px;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+  text-align: left;
+  min-width: 200px;
+}
+
+#dropdownMenu button {
+  display: block;
+  width: 100%;
+  background: none;
+  border: none;
+  text-align: left;
+  padding: 8px;
+  font-size: 14px;
+  cursor: pointer;
+}
+
+#dropdownMenu button:hover {
+  background-color: #f5f5f5;
+}
+
   </style>
 </head>
-<body>
-  <button id="editButton" onclick="toggleEdit()">Effekte bearbeiten</button>
-  <button id="globalEditButton" onclick="toggleGlobalEdit()">Globale Effekte bearbeiten</button>
-  <button id="toggleStatsButton" onclick="toggleStats()">Statistiken ein-/ausblenden</button>
-  <button id="settingsButton" onclick="toggleSettings()">⚙️ Einstellungen</button>
+<body
+  <div id="dropdownContainer">
+  <button id="dropdownToggle">⚙️</button>
+  <div id="dropdownMenu">
+    <button onclick="toggleEdit()">Effekte bearbeiten</button>
+    <button onclick="toggleGlobalEdit()">Globale Effekte bearbeiten</button>
+    <button onclick="toggleStats()">Statistiken ein-/ausblenden</button>
+    <button onclick="toggleSettings()">Einstellungen</button>
+  </div>
+</div>
 
   <div id="settingsMenu">
     <h3>Einstellungen</h3>
@@ -560,6 +611,18 @@ const thirdDiceChart = new Chart(document.getElementById('thirdDiceChart'), {
         e.preventDefault();
       }
     });
+    const toggleButton = document.getElementById("dropdownToggle");
+const menu = document.getElementById("dropdownMenu");
+
+toggleButton.addEventListener("click", () => {
+  menu.style.display = menu.style.display === "block" ? "none" : "block";
+});
+
+document.addEventListener("click", (e) => {
+  if (!document.getElementById("dropdownContainer").contains(e.target)) {
+    menu.style.display = "none";
+  }
+});
   </script>
 </body>
 </html>
