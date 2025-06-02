@@ -130,7 +130,6 @@
   top: 30px;
   right: 30px;
   z-index: 1;
-  text-align: left;
 }
 
 #dropdownToggle {
@@ -174,16 +173,26 @@
 
   </style>
 </head>
-<body
+<body>
+  <!-- Zahnrad-Menü -->
   <div id="dropdownContainer">
-  <button id="dropdownToggle">⚙️</button>
-  <div id="dropdownMenu">
-    <button onclick="toggleEdit()">Effekte bearbeiten</button>
-    <button onclick="toggleGlobalEdit()">Globale Effekte bearbeiten</button>
-    <button onclick="toggleStats()">Statistiken ein-/ausblenden</button>
-    <button onclick="toggleSettings()">Einstellungen</button>
+    <button id="dropdownToggle">⚙️</button>
+    <div id="dropdownMenu">
+      <button onclick="toggleEdit()">Effekte bearbeiten</button>
+      <button onclick="toggleGlobalEdit()">Globale Effekte bearbeiten</button>
+      <button onclick="toggleStats()">Statistiken ein-/ausblenden</button>
+      <button onclick="toggleSettings()">Einstellungen</button>
+    </div>
   </div>
-</div>
+
+  <!-- Zentrierter Inhaltsbereich -->
+  <div id="mainContent">
+    <h1>Würfelaktion</h1>
+    <div class="dice-container">
+      <!-- ... alle Würfel etc. ... -->
+    </div>
+    <!-- ... alles Weitere ... -->
+  </div>
 
   <div id="settingsMenu">
     <h3>Einstellungen</h3>
