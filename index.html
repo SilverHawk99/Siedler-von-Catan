@@ -249,6 +249,13 @@
   </div>
 
   <script>
+    function speak(text) {
+    const utterance = new SpeechSynthesisUtterance(text);               // Stimme auswählen
+    const selectedVoice = speechSynthesis.getVoices().find(voice => voice.lang === 'de-DE');
+    if (selectedVoice) utterance.voice = selectedVoice;
+    speechSynthesis.speak(utterance);
+  }
+
     let settings = JSON.parse(localStorage.getItem("diceSettings")) || {
       normalDice: true,
       barbarianDice: true,
@@ -541,6 +548,11 @@ const thirdDiceChart = new Chart(document.getElementById('thirdDiceChart'), {
       statsChart.update();
       thirdDiceChart.update();
       fourthDiceChart.update();
+
+      if (settings.normalDice) {
+  speak(`Die Summe ist ${sum}`);
+}
+
 
       if (sum === 7 && settings.effectsOnSeven) {
         const randomEffect = effects[Math.floor(Math.random() * effects.length)];
