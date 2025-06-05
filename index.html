@@ -550,7 +550,9 @@ const thirdDiceChart = new Chart(document.getElementById('thirdDiceChart'), {
       fourthDiceChart.update();
 
       if (settings.normalDice) {
-  speak(`Die Summe ist ${sum}`);
+  speak(`Es wurde eine ${sum} gewürfelt.`);
+  speak(`Das Barbarenschiff muss ${thirdOutcome}.`);
+  speak(`Die ${fourthText} Handelsgilde ist an der Macht.`);      
 }
 
 
